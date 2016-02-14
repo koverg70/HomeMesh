@@ -93,7 +93,7 @@ public:
 		{
 			if (payload[0] == 'S') {
 				// update schedule
-				printf("Schedule message received...\r\n");
+				printf_P(PSTR("Schedule message received...\r\n"));
 				memcpy(&timing, payload + 1, sizeof(timing));
 				printTiming(timing);
 			} else if (payload[0] == 'G') {
@@ -101,7 +101,7 @@ public:
 				uint8_t nodeId = mesh.getNodeID(header.from_node);
 				delay(50);	// FIXIT: queue?
 				boolean ok = mesh.write(timing, 'S', 12, nodeId);
-				printf("Schedule values sent to %d. Result: %d\r\n", nodeId, ok);
+				printf_P(PSTR("Schedule values sent to %d. Result: %d\r\n"), nodeId, ok);
 				printTiming(timing);
 			}
 			return true;
@@ -128,7 +128,7 @@ public:
 			{
 				if (!heatOn)
 				{
-					printf("Relay ON.\r\n");
+					printf_P(PSTR("Relay ON.\r\n"));
 					heatOn = true;
 					heatStart = currentTime;
 				}
@@ -137,11 +137,11 @@ public:
 			{
 				if (heatOn)
 				{
-					printf("Relay OFF.\r\n");
+					printf_P(PSTR("Relay OFF.\r\n"));
 					heatOn = false;
 					heatSeconds += (currentTime - heatStart);
 					heatStart = 0;
-					printf("Heat seconds: %d\r\n", heatSeconds);
+					printf_P(PSTR("Heat seconds: %d\r\n"), heatSeconds);
 				}
 			}
 

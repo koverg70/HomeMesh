@@ -46,11 +46,11 @@ public:
 			if (payload[0] == 'S') {
 				// set time
 				time_t senderTime = *((time_t *)(payload + 1));
-				printf("Time received: %s\r\n", ITask::timeToText(senderTime, buffer));
+				printf_P(PSTR("Time received: %s, from address: %d\r\n"), ITask::timeToText(senderTime, buffer), header.from_node);
 				// csak akkor fogadjuk el, ha értelmes évszám van benne
 				if (year(senderTime) >= 2013)
 				{
-					printf("Time set: %s\r\n", ITask::timeToText(senderTime, buffer));
+					printf_P(PSTR("Time set: %s\r\n"), ITask::timeToText(senderTime, buffer));
 					setTime(senderTime);
 					lastUpdate = millis();
 					checkCount = 0;
@@ -64,7 +64,7 @@ public:
 					uint8_t nodeId = mesh.getNodeID(header.from_node);
 					delay(50);	// FIXIT: queue?
 					boolean ok = mesh.write(buffer, 'T', sizeof(buffer), nodeId);
-					printf("Time sent to %d. Result: %d\r\n", nodeId, ok);
+					printf_P(PSTR("Time sent to %d. Result: %d\r\n"), nodeId, ok);
 				}
 			}
 			return true;
@@ -86,12 +86,15 @@ public:
 //					if (!mesh.checkConnection())
 //					{
 //					}
-					uint8_t buffer[1];
-					buffer[0] = 'G';
-					mesh.write(buffer, 'T', sizeof(buffer), timeServerNode);
-					printf("Time request sent.\r\n");
-					lastCheck = millis();
-					checkCount++;
+					if (timeServerNode != NODE_ID)	// we do not want to send request to ourself
+					{
+						uint8_t buffer[1];
+						buffer[0] = 'G';
+						mesh.write(buffer, 'T', sizeof(buffer), timeServerNode);
+						printf_P(PSTR("Time request sent to node: %d\r\n"), timeServerNode);
+						lastCheck = millis();
+						checkCount++;
+					}
 
 #if NODE_ID != 0	// a master node nem release-el
 					// nem kaptunk idõt az elõzõ 3 lekérdezésre, úgy vesszük, hogy nem él a master
@@ -100,7 +103,7 @@ public:
 						lastUpdate = 0;
 						checkCount = 0;
 						// setTime(0); - az idõt ne töröljük, mert felesleges kapcsolgatás lehet belõle
-						printf("Connection lost. Address released.\r\n");
+						printf_P(PSTR("Connection lost. Address released.\r\n"));
 						mesh.releaseAddress();
 					}
 #endif
@@ -114,7 +117,7 @@ public:
 			ledState = ledState == HIGH ? LOW : HIGH;
 			char buffer[21];
 			time_t currentTime = now();
-			printf("Current time is: %s (%ld)\r\n", timeToText(currentTime, buffer), currentTime);
+			printf_P(PSTR("Current time is: %s (%ld)\r\n"), timeToText(currentTime, buffer), currentTime);
 	    }
 		digitalWrite(LED_PIN, ledState);
 	}
